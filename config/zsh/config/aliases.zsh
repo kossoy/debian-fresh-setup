@@ -169,6 +169,11 @@ if command -v eza >/dev/null 2>&1; then
     alias la='eza -a'
 fi
 
+# fastfetch is the modern replacement for neofetch
+if command -v fastfetch >/dev/null 2>&1; then
+    alias neofetch='fastfetch'
+fi
+
 # =============================================================================
 # CLIPBOARD ALIASES (Linux)
 # =============================================================================

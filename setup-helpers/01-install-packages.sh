@@ -32,6 +32,7 @@ sudo apt install -y \
     fd-find \
     ripgrep \
     htop \
+    fastfetch \
     zsh \
     vim \
     nano \

@@ -83,6 +83,7 @@ sudo apt install -y \
     btop \
     ncdu \
     tldr \
+    fastfetch \
     unzip \
     zip \
     p7zip-full

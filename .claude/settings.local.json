@@ -28,7 +28,9 @@
       "Bash(/Users/i065699/.pyenv/versions/3.12.8/bin/python:*)",
       "Bash(curl:*)",
       "Read(//private/tmp/**)",
-      "Bash(uvicorn:*)"
+      "Bash(uvicorn:*)",
+      "Bash(ssh:*)",
+      "Bash(scp:*)"
     ],
     "deny": [],
     "ask": []

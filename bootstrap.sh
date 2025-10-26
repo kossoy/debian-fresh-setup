@@ -406,7 +406,70 @@ run_installation() {
         mkdir -p ~/work/{databases,tools,projects/{work,personal},configs/{work,personal},scripts,docs,bin}
         print_success "Work directory structure created"
     fi
-    
+
+    # Configure Git
+    print_status "Configuring Git..."
+    git config --global user.name "$USER_FULL_NAME"
+    git config --global user.email "$PERSONAL_EMAIL"
+    git config --global init.defaultBranch main
+    git config --global color.ui auto
+    git config --global pull.rebase true
+    git config --global fetch.prune true
+    print_success "Git configured with: $USER_FULL_NAME <$PERSONAL_EMAIL>"
+
+    # Generate SSH key
+    if [[ ! -f ~/.ssh/id_ed25519 ]]; then
+        print_status "Generating SSH key for personal use..."
+        ssh-keygen -t ed25519 -C "$PERSONAL_EMAIL" -f ~/.ssh/id_ed25519 -N ""
+        eval "$(ssh-agent -s)"
+        ssh-add ~/.ssh/id_ed25519
+        print_success "SSH key generated: ~/.ssh/id_ed25519"
+
+        print_status "Your public key:"
+        cat ~/.ssh/id_ed25519.pub
+        echo ""
+    else
+        print_status "SSH key already exists, skipping generation"
+    fi
+
+    # Setup context switching with actual user data
+    print_status "Setting up context switching..."
+    mkdir -p ~/.zsh/private
+
+    # Create work context template
+    cat > ~/.zsh/private/work-template.zsh << WORK_CONTEXT_EOF
+export WORK_CONTEXT="work"
+export GIT_AUTHOR_NAME="$USER_FULL_NAME"
+export GIT_AUTHOR_EMAIL="$WORK_EMAIL"
+export GIT_COMMITTER_NAME="\$GIT_AUTHOR_NAME"
+export GIT_COMMITTER_EMAIL="\$GIT_AUTHOR_EMAIL"
+export WORK_PROJECTS="\$HOME/work/projects/work"
+cd "\$WORK_PROJECTS" 2>/dev/null || cd "\$HOME/work"
+WORK_CONTEXT_EOF
+
+    # Create personal context template
+    cat > ~/.zsh/private/personal-template.zsh << PERSONAL_CONTEXT_EOF
+export WORK_CONTEXT="personal"
+export GIT_AUTHOR_NAME="$USER_FULL_NAME"
+export GIT_AUTHOR_EMAIL="$PERSONAL_EMAIL"
+export GIT_COMMITTER_NAME="\$GIT_AUTHOR_NAME"
+export GIT_COMMITTER_EMAIL="\$GIT_AUTHOR_EMAIL"
+export PERSONAL_PROJECTS="\$HOME/work/projects/personal"
+cd "\$PERSONAL_PROJECTS" 2>/dev/null || cd "\$HOME/work"
+PERSONAL_CONTEXT_EOF
+
+    # Update context.zsh with real email addresses
+    if [[ -f ~/.zsh/config/context.zsh ]]; then
+        sed -i.bak "s/john.doe@company.com/$WORK_EMAIL/g" ~/.zsh/config/context.zsh
+        sed -i.bak "s/john@example.com/$PERSONAL_EMAIL/g" ~/.zsh/config/context.zsh
+        sed -i.bak "s/John Doe/$USER_FULL_NAME/g" ~/.zsh/config/context.zsh
+        rm ~/.zsh/config/context.zsh.bak
+    fi
+
+    # Set default to personal context
+    cp ~/.zsh/private/personal-template.zsh ~/.zsh/private/current.zsh
+    print_success "Context switching configured (default: personal)"
+
     print_success "Installation completed successfully!"
     echo ""
 }
@@ -414,34 +477,46 @@ run_installation() {
 # Function to display post-installation instructions
 display_post_installation() {
     print_header "🎉 Installation Complete!"
-    
-    echo "Next steps:"
+
+    echo "✅ What was configured automatically:"
     echo ""
-    echo "1. 🔑 Restore sensitive files:"
-    echo "   - API keys: ~/.zsh/private/api-keys.zsh"
-    echo "   - SSH keys: ~/.ssh/"
+    echo "  ✓ Git: $USER_FULL_NAME <$PERSONAL_EMAIL>"
+    echo "  ✓ SSH key: ~/.ssh/id_ed25519"
+    echo "  ✓ Context switching: work ↔ personal"
+    echo "  ✓ Work directory: ~/work/"
+    echo "  ✓ Shell: zsh + Oh My Zsh + Powerlevel10k"
+    echo ""
+
+    print_header "📝 Next Steps (Required):"
+    echo ""
+    echo "1. 🔑 Add your SSH key to GitHub:"
+    echo "   Copy this public key:"
+    echo ""
+    cat ~/.ssh/id_ed25519.pub 2>/dev/null || echo "   (SSH key not found - generate manually)"
+    echo ""
+    echo "   Then add it at: https://github.com/settings/keys"
     echo ""
     echo "2. 🔄 Reload your shell:"
-    echo "   source ~/.zshrc"
-    echo "   # or restart your terminal"
+    echo "   exec zsh"
     echo ""
-    echo "3. ⚙️  Configure Git:"
-    echo "   git config --global user.name '$USER_FULL_NAME'"
-    echo "   git config --global user.email '$WORK_EMAIL'  # or $PERSONAL_EMAIL"
+
+    print_header "🧪 Test Your Setup:"
     echo ""
-    echo "4. 🔐 Set up GitHub SSH keys:"
-    echo "   ssh-keygen -t ed25519 -C '$WORK_EMAIL'"
-    echo "   # Add to GitHub: https://github.com/settings/keys"
+    echo "  work          # Switch to work context ($WORK_EMAIL)"
+    echo "  personal      # Switch to personal context ($PERSONAL_EMAIL)"
+    echo "  show-context  # Check current context"
+    echo "  wdu           # Disk usage analyzer"
     echo ""
-    echo "5. 📚 Get full documentation:"
-    echo "   git clone https://github.com/username/debian-fresh-setup ~/work/docs/debian-setup-full"
+
+    print_header "🔧 Optional:"
     echo ""
-    echo "6. 🧪 Test your setup:"
-    echo "   work      # Switch to work context"
-    echo "   personal  # Switch to personal context"
-    echo "   show-context  # Check current context"
+    echo "• Generate work SSH key:"
+    echo "  ssh-keygen -t ed25519 -C '$WORK_EMAIL' -f ~/.ssh/id_ed25519_work"
     echo ""
-    
+    echo "• Add API keys (if needed):"
+    echo "  nano ~/.zsh/private/api-keys.zsh"
+    echo ""
+
     print_success "Setup complete! Welcome to your new development environment! 🚀"
 }
 

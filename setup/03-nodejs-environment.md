@@ -57,6 +57,28 @@ volta list node
 
 ## 3. Essential Global Packages
 
+### Check What's Installed
+
+```bash
+# List active tools
+volta list
+
+# Example output if only Node.js is installed:
+# ⚡️ Currently active tools:
+#     Node: v22.21.0 (default)
+#     Tool binaries available: NONE
+
+# List all installed tools
+volta list all
+
+# List only Node versions
+volta list node
+```
+
+**"Tool binaries available: NONE"** means you haven't installed any global tools yet (yarn, pnpm, typescript, etc.). This is normal after minimal installation.
+
+### Install Global Tools
+
 ```bash
 # Package managers
 volta install yarn pnpm
@@ -72,6 +94,16 @@ volta install webpack webpack-cli vite
 
 # All at once
 volta install yarn pnpm typescript ts-node nodemon eslint prettier webpack webpack-cli vite
+```
+
+### Re-run Setup Script
+
+If you used the automated script with minimal mode, you can re-run it:
+
+```bash
+cd ~/debian-fresh-setup
+./setup-helpers/06-install-nodejs.sh
+# Choose option 2 (Standard) or 3 (Full)
 ```
 
 ## 4. Project-Specific Version Management

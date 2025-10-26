@@ -1,0 +1,8 @@
+[Unit]
+Description=Example Script Service
+After=network.target
+
+[Service]
+Type=oneshot
+User=%u
+ExecStart=%h/work/scripts/my-script.sh

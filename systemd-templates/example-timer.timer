@@ -1,0 +1,11 @@
+[Unit]
+Description=Example Timer - Runs every hour
+Requires=example-script.service
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=1h
+Unit=example-script.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,16 @@
+[Unit]
+Description=Example Web Application
+After=network.target
+
+[Service]
+Type=simple
+User=%u
+WorkingDirectory=%h/work/projects/personal/my-webapp
+Environment="NODE_ENV=production"
+Environment="PORT=3000"
+ExecStart=/usr/bin/node server.js
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target

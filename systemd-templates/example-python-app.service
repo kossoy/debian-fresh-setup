@@ -1,0 +1,15 @@
+[Unit]
+Description=Example Python Application
+After=network.target
+
+[Service]
+Type=simple
+User=%u
+WorkingDirectory=%h/work/projects/personal/my-python-app
+Environment="PYTHONUNBUFFERED=1"
+ExecStart=%h/work/projects/personal/my-python-app/venv/bin/python app.py
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target

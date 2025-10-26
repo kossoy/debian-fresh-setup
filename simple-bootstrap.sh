@@ -135,9 +135,10 @@ mkdir -p ~/.zsh/{config,private}
 echo "📋 Copying your working configuration..."
 # Copy your actual working files
 cp "$SCRIPT_DIR/config/zsh/config/aliases.zsh" ~/.zsh/config/aliases.zsh
-cp "$SCRIPT_DIR/config/zsh/config/functions.zsh" ~/.zsh/config/functions.zsh  
+cp "$SCRIPT_DIR/config/zsh/config/functions.zsh" ~/.zsh/config/functions.zsh
 cp "$SCRIPT_DIR/config/zsh/config/paths.zsh" ~/.zsh/config/paths.zsh
 cp "$SCRIPT_DIR/config/zsh/config/tools.zsh" ~/.zsh/config/tools.zsh
+cp "$SCRIPT_DIR/config/zsh/config/context.zsh" ~/.zsh/config/context.zsh
 
 # Create simple .zshrc that sources your files
 cat > ~/.zshrc << 'ZSHRC'
@@ -155,14 +156,10 @@ source $ZSH/oh-my-zsh.sh
 # Your custom config
 ZSH_CONFIG_DIR="$HOME/.zsh/config"
 source "$ZSH_CONFIG_DIR/paths.zsh"
-source "$ZSH_CONFIG_DIR/aliases.zsh" 
+source "$ZSH_CONFIG_DIR/aliases.zsh"
 source "$ZSH_CONFIG_DIR/functions.zsh"
 source "$ZSH_CONFIG_DIR/tools.zsh"
-
-# Load context if exists
-if [ -f "$HOME/.zsh/private/current.zsh" ]; then
-    source "$HOME/.zsh/private/current.zsh"
-fi
+source "$ZSH_CONFIG_DIR/context.zsh"
 ZSHRC
 
 echo "🎨 Copying Powerlevel10k config..."

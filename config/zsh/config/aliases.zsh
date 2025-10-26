@@ -184,3 +184,12 @@ if command -v wl-copy >/dev/null 2>&1; then
     alias pbcopy='wl-copy'
     alias pbpaste='wl-paste'
 fi
+
+# =============================================================================
+# DISK USAGE ANALYZER
+# =============================================================================
+
+# Disk usage analyzer (wdu)
+if [[ -f "$HOME/work/scripts/wdu.sh" ]]; then
+    alias wdu="bash $HOME/work/scripts/wdu.sh"
+fi

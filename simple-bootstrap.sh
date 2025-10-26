@@ -124,7 +124,12 @@ if ! command -v docker >/dev/null 2>&1; then
     sudo systemctl enable containerd.service
     sudo systemctl start docker.service
 
-    echo "✅ Docker installed: $(docker --version)"
+    # Test with sudo (current session doesn't have group yet)
+    if sudo docker ps >/dev/null 2>&1; then
+        echo "✅ Docker installed and working: $(docker --version)"
+    else
+        echo "❌ Docker installed but test failed"
+    fi
 else
     echo "✅ Docker already installed"
 fi
@@ -260,16 +265,22 @@ else
 fi
 
 echo ""
-echo "Next steps:"
-echo "1. ⚠️  IMPORTANT: Log out and log back in"
-echo "   This activates your docker group membership"
+echo "✅ Installation complete!"
 echo ""
-echo "2. Open a new terminal and run: source ~/.zshrc"
+echo "⚠️  CRITICAL - Docker group requires session restart:"
 echo ""
-echo "3. (Optional) Configure API keys in ~/.zsh/private/api-keys.zsh"
+echo "Option 1 (Recommended):"
+echo "  1. Log out and log back in"
+echo "  2. Run: source ~/.zshrc"
+echo "  3. Test: docker ps"
 echo ""
-echo "4. Test Docker: docker ps"
-echo "   Test context switching: work, personal, show-context"
+echo "Option 2 (Quick test):"
+echo "  1. Run: newgrp docker"
+echo "  2. Run: source ~/.zshrc"
+echo "  3. Test: docker ps"
 echo ""
-echo "Your working configuration has been copied and should work exactly as before."
+echo "Option 3 (Use sudo for now):"
+echo "  sudo docker ps"
+echo ""
+echo "Test context switching: work, personal, show-context"
 echo ""

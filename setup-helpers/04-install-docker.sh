@@ -70,7 +70,23 @@ echo "Installed versions:"
 docker --version
 docker compose version
 
+# Test Docker with sudo (current session doesn't have group yet)
 echo ""
-echo "⚠️  IMPORTANT: You need to log out and log back in for docker group membership to take effect"
-echo "   Or run: newgrp docker"
+echo "🧪 Testing Docker installation..."
+if sudo docker ps >/dev/null 2>&1; then
+    echo "✅ Docker is working correctly"
+else
+    echo "❌ Docker test failed - please check installation"
+    exit 1
+fi
+
+echo ""
+echo "⚠️  CRITICAL: Docker group membership requires shell restart"
+echo ""
+echo "Choose one:"
+echo "  1) Log out and log back in (recommended)"
+echo "  2) Run: newgrp docker  (activates group in current session)"
+echo "  3) Run docker commands with sudo for now: sudo docker ps"
+echo ""
+echo "After restarting your session, 'docker ps' will work without sudo"
 echo ""

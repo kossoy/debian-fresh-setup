@@ -65,7 +65,27 @@ echo "📦 Updating package lists..."
 sudo apt update
 
 echo "📦 Installing essential packages..."
-sudo apt install -y git wget curl tree jq bat fd-find ripgrep build-essential zsh
+sudo apt install -y \
+    git \
+    wget \
+    curl \
+    tree \
+    jq \
+    bat \
+    fd-find \
+    ripgrep \
+    build-essential \
+    zsh \
+    vim \
+    neovim \
+    tmux \
+    htop \
+    btop \
+    ncdu \
+    tldr \
+    unzip \
+    zip \
+    p7zip-full
 
 echo "📦 Installing GitHub CLI..."
 if ! command -v gh >/dev/null 2>&1; then

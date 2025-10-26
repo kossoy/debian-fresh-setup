@@ -26,19 +26,35 @@ source ~/.zshrc
 
 ## What You Get
 
-✅ **Enhanced Shell**: Oh My Zsh + Powerlevel10k + custom functions  
-✅ **Context Switching**: Automatic work/personal environment switching  
-✅ **Utility Scripts**: Disk usage, process management, network tools  
-✅ **Work Organization**: Structured project directories  
-✅ **Linux Integration**: Systemd services, apt package management  
+✅ **Enhanced Shell**: Oh My Zsh + Powerlevel10k + custom functions
+✅ **Context Switching**: Automatic work/personal environment switching
+✅ **Essential Dev Tools**: git, gh, vim, neovim, tmux, htop, btop, ncdu, tldr, ripgrep, bat, fd, eza
+✅ **Utility Scripts**: Disk usage, systemd manager, update checker, backup tools
+✅ **Work Organization**: Structured project directories
+✅ **Linux Integration**: Systemd services, apt package management
+✅ **Comprehensive Guides**: Python, Node.js, Docker, Git, SSH, Context Switching  
 
 ## Essential Commands
 
+### Context Switching
 ```bash
 work                    # Switch to work context
 personal               # Switch to personal context
 show-context           # Check current context
+```
+
+### Utility Scripts
+```bash
 wdu                    # Disk usage analyzer
+~/work/scripts/systemd-manager.sh    # Manage systemd user services
+~/work/scripts/update-check.sh       # Check for system updates
+~/work/scripts/backup-configs.sh     # Backup configurations
+~/work/scripts/llm-usage.sh          # Track LLM API usage
+~/work/scripts/sync-to-branches.sh   # Sync files across git branches
+```
+
+### System Info
+```bash
 psme <process>         # Find processes
 myip                   # Get your public IP
 ```
@@ -92,9 +108,25 @@ This setup is designed for **Debian-based distributions** using the `apt` packag
 
 ## Documentation
 
-- **Quick Setup**: See `simple-bootstrap.sh` for minimal setup
-- **Setup Guides**: See `setup/` directory for detailed instructions
-- **Guides**: See `guides/` directory for specific configurations
+### Quick Setup
+- **Simple Bootstrap**: `simple-bootstrap.sh` - One-command setup
+
+### Setup Helpers (in `setup-helpers/`)
+- `01-install-packages.sh` - Install essential packages
+- `02-install-oh-my-zsh.sh` - Install Oh My Zsh and plugins
+- `03-git-and-ssh-setup.sh` - Interactive Git and SSH configuration
+
+### Comprehensive Guides (in `setup/`)
+- `01-zsh-configuration.md` - Shell configuration guide
+- `02-python-environment.md` - Python development setup (pyenv, pip, virtualenv)
+- `03-nodejs-environment.md` - Node.js development setup (Volta, npm, yarn)
+- `04-docker-setup.md` - Docker and containerization setup
+- `05-git-configuration.md` - Git configuration and SSH keys
+- `06-context-switching.md` - Work/Personal context switching guide
+
+### Systemd Templates (in `systemd-templates/`)
+- Service templates for web apps, Python apps, and timers
+- Complete README with examples and best practices
 
 ## Key Features
 
@@ -148,10 +180,22 @@ Installs essential packages, Oh My Zsh, and shell configuration.
 ### Manual Installation
 Run setup helpers individually:
 ```bash
-./setup-helpers/01-install-packages.sh
-./setup-helpers/02-install-oh-my-zsh.sh
-./setup-helpers/03-setup-shell.sh
+./setup-helpers/01-install-packages.sh      # Install packages
+./setup-helpers/02-install-oh-my-zsh.sh     # Install Oh My Zsh
+./setup-helpers/03-git-and-ssh-setup.sh     # Configure Git and SSH
 ```
+
+### Post-Installation Setup
+Run the interactive Git and SSH setup:
+```bash
+./setup-helpers/03-git-and-ssh-setup.sh
+```
+
+This will guide you through:
+- Git configuration (name, email, aliases)
+- SSH key generation
+- GitHub CLI authentication
+- Multiple SSH keys for work/personal
 
 ## Customization
 
@@ -206,20 +250,31 @@ chmod +x ~/work/scripts/*.zsh
 
 After installation:
 
-1. Configure Git:
+1. **Configure Git and SSH** (Interactive):
    ```bash
-   git config --global user.name "Your Name"
-   git config --global user.email "your.email@example.com"
+   ./setup-helpers/03-git-and-ssh-setup.sh
    ```
 
-2. Set up SSH keys:
+2. **Customize Context Switching**:
+   - Edit `~/.zsh/config/context.zsh`
+   - Update work and personal email addresses
+   - See `setup/06-context-switching.md` for full guide
+
+3. **Set Up Development Environments**:
+   - Python: See `setup/02-python-environment.md`
+   - Node.js: See `setup/03-nodejs-environment.md`
+   - Docker: See `setup/04-docker-setup.md`
+
+4. **Configure API Keys** (Optional):
    ```bash
-   ssh-keygen -t ed25519 -C "your.email@example.com"
+   nano ~/.zsh/private/api-keys.zsh
+   chmod 600 ~/.zsh/private/api-keys.zsh
    ```
 
-3. Install additional development tools (see `setup/` guides)
-
-4. Configure context switching (see `guides/context-switching.md`)
+5. **Explore Utility Scripts**:
+   ```bash
+   ls -l ~/work/scripts/
+   ```
 
 ---
 

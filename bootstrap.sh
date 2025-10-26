@@ -211,7 +211,6 @@ select_installation_mode() {
     echo "Choose installation mode:"
     echo "1) Full Installation (recommended)"
     echo "   - System packages via APT"
-    echo "   - Homebrew for development tools"
     echo "   - Oh My Zsh + plugins + Powerlevel10k"
     echo "   - Complete shell configuration"
     echo "   - Utility scripts"
@@ -261,25 +260,18 @@ customize_installation() {
     print_header "🔧 Custom Installation Options"
     
     INSTALL_SYSTEM_PACKAGES=false
-    INSTALL_HOMEBREW=false
     INSTALL_OHMYZSH=false
     INSTALL_SHELL_CONFIG=true
     INSTALL_SCRIPTS=true
     INSTALL_WORK_DIR=true
-    
+
     echo "Select components to install:"
     read -p "Install system packages via APT? (y/n): " -n 1 -r
     echo ""
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         INSTALL_SYSTEM_PACKAGES=true
     fi
-    
-    read -p "Install Homebrew for development tools? (y/n): " -n 1 -r
-    echo ""
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        INSTALL_HOMEBREW=true
-    fi
-    
+
     read -p "Install Oh My Zsh + plugins? (y/n): " -n 1 -r
     echo ""
     if [[ $REPLY =~ ^[Yy]$ ]]; then
@@ -318,11 +310,7 @@ display_installation_plan() {
     if [[ "$INSTALL_MODE" == "full" ]] || [[ "$INSTALL_SYSTEM_PACKAGES" == "true" ]]; then
         echo "✅ System packages via APT (build-essential, git, curl, etc.)"
         echo "✅ Development dependencies"
-    fi
-    
-    if [[ "$INSTALL_MODE" == "full" ]] || [[ "$INSTALL_HOMEBREW" == "true" ]]; then
-        echo "✅ Homebrew for Linux"
-        echo "✅ Modern CLI tools (ripgrep, fd, bat, eza, etc.)"
+        echo "✅ Modern CLI tools (ripgrep, fd, bat, eza, gh, etc.)"
     fi
     
     if [[ "$INSTALL_MODE" == "full" ]] || [[ "$INSTALL_OHMYZSH" == "true" ]]; then
@@ -385,28 +373,21 @@ run_installation() {
     # Install system packages
     if [[ "$INSTALL_MODE" == "full" ]] || [[ "$INSTALL_SYSTEM_PACKAGES" == "true" ]]; then
         print_status "Installing system packages..."
-        bash "$SCRIPT_DIR/setup-helpers/01-install-system-packages.sh"
+        bash "$SCRIPT_DIR/setup-helpers/01-install-packages.sh"
         print_success "System packages installation complete"
     fi
-    
-    # Install Homebrew
-    if [[ "$INSTALL_MODE" == "full" ]] || [[ "$INSTALL_HOMEBREW" == "true" ]]; then
-        print_status "Installing Homebrew for Linux..."
-        bash "$SCRIPT_DIR/setup-helpers/02-install-homebrew.sh"
-        print_success "Homebrew installation complete"
-    fi
-    
+
     # Install Oh My Zsh
     if [[ "$INSTALL_MODE" == "full" ]] || [[ "$INSTALL_OHMYZSH" == "true" ]]; then
         print_status "Installing Oh My Zsh and plugins..."
-        bash "$SCRIPT_DIR/setup-helpers/03-install-oh-my-zsh.sh"
+        bash "$SCRIPT_DIR/setup-helpers/02-install-oh-my-zsh.sh"
         print_success "Oh My Zsh installation complete"
     fi
-    
+
     # Setup shell configuration
     if [[ "$INSTALL_MODE" == "full" ]] || [[ "$INSTALL_SHELL_CONFIG" == "true" ]]; then
         print_status "Setting up shell configuration..."
-        bash "$SCRIPT_DIR/setup-helpers/04-setup-shell.sh"
+        bash "$SCRIPT_DIR/setup-helpers/03-setup-shell.sh"
         print_success "Shell configuration complete"
     fi
     

@@ -4,25 +4,47 @@
 
 ## Quick Start
 
-### 1. Clone & Run
+### One-Line Installation (Recommended)
+
+No git required! Just run:
+
 ```bash
-git clone https://github.com/username/debian-fresh-setup.git
+bash <(curl -fsSL https://raw.githubusercontent.com/kossoy/debian-fresh-setup/main/install.sh)
+```
+
+Or with wget:
+
+```bash
+bash <(wget -qO- https://raw.githubusercontent.com/kossoy/debian-fresh-setup/main/install.sh)
+```
+
+This will:
+- Install git if needed
+- Clone the repository to `~/debian-fresh-setup`
+- Offer to run the automatic setup
+
+### Alternative: Manual Clone & Run
+
+If you already have git installed:
+
+```bash
+git clone https://github.com/kossoy/debian-fresh-setup.git
 cd debian-fresh-setup
-chmod +x simple-bootstrap.sh
 ./simple-bootstrap.sh
 ```
 
-### 2. Set zsh as Default Shell
-```bash
-chsh -s $(which zsh)
-# Logout and login again for changes to take effect
-```
+### After Installation
 
-### 3. Reload Shell
-```bash
-source ~/.zshrc
-# or restart your terminal
-```
+1. Set zsh as default shell (if prompted):
+   ```bash
+   chsh -s $(which zsh)
+   # Logout and login for changes to take effect
+   ```
+
+2. Reload shell:
+   ```bash
+   source ~/.zshrc
+   ```
 
 ## What You Get
 

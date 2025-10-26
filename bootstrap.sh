@@ -418,18 +418,49 @@ run_installation() {
     print_success "Git configured with: $USER_FULL_NAME <$PERSONAL_EMAIL>"
 
     # Generate SSH key
+    SSH_KEY_GENERATED=false
     if [[ ! -f ~/.ssh/id_ed25519 ]]; then
         print_status "Generating SSH key for personal use..."
         ssh-keygen -t ed25519 -C "$PERSONAL_EMAIL" -f ~/.ssh/id_ed25519 -N ""
         eval "$(ssh-agent -s)"
         ssh-add ~/.ssh/id_ed25519
         print_success "SSH key generated: ~/.ssh/id_ed25519"
+        SSH_KEY_GENERATED=true
 
         print_status "Your public key:"
         cat ~/.ssh/id_ed25519.pub
         echo ""
     else
         print_status "SSH key already exists, skipping generation"
+    fi
+
+    # Authenticate with GitHub and add SSH key
+    if command -v gh >/dev/null 2>&1; then
+        print_status "Configuring GitHub CLI..."
+
+        # Check if already authenticated
+        if gh auth status >/dev/null 2>&1; then
+            print_success "Already authenticated with GitHub CLI"
+        else
+            print_status "Authenticating with GitHub CLI..."
+            if ! $TEST_MODE; then
+                gh auth login --git-protocol ssh --web
+            fi
+        fi
+
+        # Add SSH key to GitHub if we just generated it
+        if [[ "$SSH_KEY_GENERATED" == "true" ]] && gh auth status >/dev/null 2>&1; then
+            print_status "Adding SSH key to GitHub..."
+            if gh ssh-key add ~/.ssh/id_ed25519.pub --title "debian-$(hostname)-$(date +%Y%m%d)" 2>/dev/null; then
+                print_success "SSH key automatically added to GitHub!"
+            else
+                print_warning "Could not automatically add SSH key (may already exist)"
+                print_status "Add it manually at: https://github.com/settings/keys"
+            fi
+        fi
+    else
+        print_warning "GitHub CLI not installed, skipping GitHub authentication"
+        print_status "Install with: sudo apt install gh"
     fi
 
     # Setup context switching with actual user data
@@ -489,14 +520,7 @@ display_post_installation() {
 
     print_header "📝 Next Steps (Required):"
     echo ""
-    echo "1. 🔑 Add your SSH key to GitHub:"
-    echo "   Copy this public key:"
-    echo ""
-    cat ~/.ssh/id_ed25519.pub 2>/dev/null || echo "   (SSH key not found - generate manually)"
-    echo ""
-    echo "   Then add it at: https://github.com/settings/keys"
-    echo ""
-    echo "2. 🔄 Reload your shell:"
+    echo "1. 🔄 Reload your shell:"
     echo "   exec zsh"
     echo ""
 

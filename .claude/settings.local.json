@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:docs.google.com)",
+      "Bash(python3:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(npm:*)",
+      "Bash(tree:*)",
+      "Bash(python:*)",
+      "Bash(git:*)",
+      "Bash(gh:*)",
+      "Bash(sed:*)",
+      "Bash(cat:*)",
+      "Bash(zip:*)",
+      "Bash(unzip:*)",
+      "Bash(shasum:*)",
+      "Bash(find:*)",
+      "Bash(chmod:*)",
+      "Read(//Users/i065699/**)",
+      "Bash(npx:*)",
+      "Bash(test:*)",
+      "Bash(docker-compose:*)",
+      "Bash(docker:*)",
+      "Bash(alembic:*)",
+      "Bash(pyenv:*)",
+      "Bash(source:*)",
+      "Bash(/Users/i065699/.pyenv/versions/3.12.8/bin/python:*)",
+      "Bash(curl:*)",
+      "Read(//private/tmp/**)",
+      "Bash(uvicorn:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

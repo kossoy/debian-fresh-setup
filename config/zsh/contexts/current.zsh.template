@@ -1,0 +1,86 @@
+# =============================================================================
+# CONTEXT SWITCHING CONFIGURATION TEMPLATE
+# =============================================================================
+# Configure work/personal context switching
+# =============================================================================
+
+# =============================================================================
+# CONTEXT VARIABLES
+# =============================================================================
+
+# Current context (work or personal)
+export CURRENT_CONTEXT="work"
+
+# Work context configuration
+export WORK_CONTEXT="COMPANY_ORG"
+export WORK_EMAIL="your.work@company.com"
+export WORK_GITHUB_USER="your-work-github"
+export WORK_BROWSER="firefox"
+
+# Personal context configuration
+export PERSONAL_CONTEXT="PERSONAL_ORG"
+export PERSONAL_EMAIL="your.personal@email.com"
+export PERSONAL_GITHUB_USER="your-personal-github"
+export PERSONAL_BROWSER="chrome"
+
+# =============================================================================
+# CONTEXT SWITCHING FUNCTIONS
+# =============================================================================
+
+# Switch to work context
+work() {
+    export CURRENT_CONTEXT="work"
+    export GIT_USER_NAME="Your Name"
+    export GIT_USER_EMAIL="$WORK_EMAIL"
+    export GITHUB_USER="$WORK_GITHUB_USER"
+    export BROWSER="$WORK_BROWSER"
+    
+    # Update git configuration
+    git config --global user.name "$GIT_USER_NAME"
+    git config --global user.email "$GIT_USER_EMAIL"
+    
+    # Set working directory
+    cd ~/work/projects/work
+    
+    echo "🏢 Switched to work context"
+    echo "   Email: $WORK_EMAIL"
+    echo "   GitHub: $WORK_GITHUB_USER"
+    echo "   Browser: $WORK_BROWSER"
+}
+
+# Switch to personal context
+personal() {
+    export CURRENT_CONTEXT="personal"
+    export GIT_USER_NAME="Your Name"
+    export GIT_USER_EMAIL="$PERSONAL_EMAIL"
+    export GITHUB_USER="$PERSONAL_GITHUB_USER"
+    export BROWSER="$PERSONAL_BROWSER"
+    
+    # Update git configuration
+    git config --global user.name "$GIT_USER_NAME"
+    git config --global user.email "$GIT_USER_EMAIL"
+    
+    # Set working directory
+    cd ~/work/projects/personal
+    
+    echo "🏠 Switched to personal context"
+    echo "   Email: $PERSONAL_EMAIL"
+    echo "   GitHub: $PERSONAL_GITHUB_USER"
+    echo "   Browser: $PERSONAL_BROWSER"
+}
+
+# Show current context
+show-context() {
+    echo "Current context: $CURRENT_CONTEXT"
+    echo "Git user: $(git config --global user.name)"
+    echo "Git email: $(git config --global user.email)"
+    echo "GitHub user: $GITHUB_USER"
+    echo "Browser: $BROWSER"
+}
+
+# =============================================================================
+# INITIAL CONTEXT SETUP
+# =============================================================================
+
+# Set initial context to work
+work

@@ -211,6 +211,7 @@ select_installation_mode() {
     echo "Choose installation mode:"
     echo "1) Full Installation (recommended)"
     echo "   - System packages via APT"
+    echo "   - Docker Engine + Docker Compose"
     echo "   - Oh My Zsh + plugins + Powerlevel10k"
     echo "   - Complete shell configuration"
     echo "   - Utility scripts"
@@ -261,6 +262,7 @@ customize_installation() {
     
     INSTALL_SYSTEM_PACKAGES=false
     INSTALL_OHMYZSH=false
+    INSTALL_DOCKER=false
     INSTALL_SHELL_CONFIG=true
     INSTALL_SCRIPTS=true
     INSTALL_WORK_DIR=true
@@ -270,6 +272,12 @@ customize_installation() {
     echo ""
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         INSTALL_SYSTEM_PACKAGES=true
+    fi
+
+    read -p "Install Docker? (y/n): " -n 1 -r
+    echo ""
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        INSTALL_DOCKER=true
     fi
 
     read -p "Install Oh My Zsh + plugins? (y/n): " -n 1 -r
@@ -311,6 +319,11 @@ display_installation_plan() {
         echo "✅ System packages via APT (build-essential, git, curl, etc.)"
         echo "✅ Development dependencies"
         echo "✅ Modern CLI tools (ripgrep, fd, bat, eza, gh, etc.)"
+    fi
+
+    if [[ "$INSTALL_MODE" == "full" ]] || [[ "$INSTALL_DOCKER" == "true" ]]; then
+        echo "✅ Docker Engine + Docker Compose"
+        echo "✅ Docker user group membership"
     fi
     
     if [[ "$INSTALL_MODE" == "full" ]] || [[ "$INSTALL_OHMYZSH" == "true" ]]; then
@@ -375,6 +388,13 @@ run_installation() {
         print_status "Installing system packages..."
         bash "$SCRIPT_DIR/setup-helpers/01-install-packages.sh"
         print_success "System packages installation complete"
+    fi
+
+    # Install Docker
+    if [[ "$INSTALL_MODE" == "full" ]] || [[ "$INSTALL_DOCKER" == "true" ]]; then
+        print_status "Installing Docker..."
+        bash "$SCRIPT_DIR/setup-helpers/04-install-docker.sh"
+        print_success "Docker installation complete"
     fi
 
     # Install Oh My Zsh
@@ -520,9 +540,18 @@ display_post_installation() {
 
     print_header "📝 Next Steps (Required):"
     echo ""
-    echo "1. 🔄 Reload your shell:"
-    echo "   exec zsh"
-    echo ""
+    if [[ "$INSTALL_MODE" == "full" ]] || [[ "$INSTALL_DOCKER" == "true" ]]; then
+        echo "1. 🔄 Log out and log back in (or run: newgrp docker)"
+        echo "   This activates your docker group membership"
+        echo ""
+        echo "2. 🔄 Reload your shell:"
+        echo "   exec zsh"
+        echo ""
+    else
+        echo "1. 🔄 Reload your shell:"
+        echo "   exec zsh"
+        echo ""
+    fi
 
     print_header "🧪 Test Your Setup:"
     echo ""

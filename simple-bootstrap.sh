@@ -97,6 +97,38 @@ if ! command -v gh >/dev/null 2>&1; then
     sudo apt install -y gh
 fi
 
+echo "🐳 Installing Docker..."
+if ! command -v docker >/dev/null 2>&1; then
+    # Install prerequisites
+    sudo apt install -y ca-certificates curl gnupg lsb-release
+
+    # Add Docker's official GPG key
+    sudo mkdir -p /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+    # Set up Docker repository
+    echo \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+      $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+    # Install Docker
+    sudo apt update
+    sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+    # Add user to docker group
+    sudo usermod -aG docker $USER
+
+    # Enable and start Docker
+    sudo systemctl enable docker.service
+    sudo systemctl enable containerd.service
+    sudo systemctl start docker.service
+
+    echo "✅ Docker installed: $(docker --version)"
+else
+    echo "✅ Docker already installed"
+fi
+
 # Install eza if not installed
 if ! command -v eza >/dev/null 2>&1; then
     echo "📦 Installing eza..."
@@ -229,10 +261,15 @@ fi
 
 echo ""
 echo "Next steps:"
-echo "1. Logout and login again (if you changed your default shell)"
+echo "1. ⚠️  IMPORTANT: Log out and log back in"
+echo "   This activates your docker group membership"
+echo ""
 echo "2. Open a new terminal and run: source ~/.zshrc"
-echo "3. Configure your API keys in ~/.zsh/private/api-keys.zsh"
-echo "4. Set up your context files"
+echo ""
+echo "3. (Optional) Configure API keys in ~/.zsh/private/api-keys.zsh"
+echo ""
+echo "4. Test Docker: docker ps"
+echo "   Test context switching: work, personal, show-context"
 echo ""
 echo "Your working configuration has been copied and should work exactly as before."
 echo ""

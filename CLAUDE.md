@@ -12,9 +12,12 @@ Semi-automated development environment setup tool for Debian-based Linux distrib
 
 Three installation methods (choose based on user's needs):
 
-1. **`simple-bootstrap.sh`** (Recommended): Non-interactive, installs packages + Docker + Oh My Zsh + deploys configs. Use this by default.
-2. **`bootstrap.sh`**: Interactive installer with user prompts for customization. Only use if user explicitly wants guided setup.
-3. **`install.sh`**: Web-accessible one-liner that handles git installation, repo cloning, and offers to run simple-bootstrap.sh. Solves the bootstrap problem on fresh systems.
+1. **`install.sh`** (Primary entry point): Web-accessible one-liner that clones repo and **automatically runs** `simple-bootstrap.sh` without prompts. After basic setup completes, offers optional full bootstrap. This is the intended user flow.
+   - Command: `bash <(wget -qO- https://raw.githubusercontent.com/kossoy/debian-fresh-setup/main/install.sh)`
+
+2. **`simple-bootstrap.sh`** (Default automation): Non-interactive, installs packages + Docker + Oh My Zsh + deploys configs. Automatically called by install.sh.
+
+3. **`bootstrap.sh`** (Advanced/Interactive): Interactive installer with Git/SSH/GitHub configuration prompts. Optionally called by install.sh after simple setup. Does NOT include Python/Node/databases/AI-ML (those are separate setup-helpers).
 
 ## Repository Structure
 
@@ -109,6 +112,14 @@ Key implementation details:
 
 ### 4. Deployment Flow
 
+**install.sh (one-liner) workflow**:
+1. Check Linux + APT availability
+2. Install git if missing
+3. Clone repo to `~/debian-fresh-setup`
+4. **Automatically run** `simple-bootstrap.sh` (no prompt)
+5. After completion, offer to run `bootstrap.sh` (Git/GitHub setup)
+6. Show commands for optional tools (Python, Node, databases, AI-ML)
+
 **simple-bootstrap.sh workflow**:
 1. Detect OS (Linux check) and distribution (APT check)
 2. Install essential packages via APT
@@ -124,6 +135,12 @@ Key implementation details:
 12. Create `~/work/` directory structure
 13. Copy utility scripts to `~/work/scripts/`
 14. Offer to set zsh as default shell via `chsh`
+
+**Optional tools** (run separately after basic setup):
+- Python: `./setup-helpers/05-install-python.sh`
+- Node.js: `./setup-helpers/06-install-nodejs.sh`
+- Databases: `./setup-helpers/07-setup-databases.sh`
+- AI/ML: `./setup-helpers/09-install-ai-ml-tools.sh`
 
 ## Commands for Development
 
@@ -141,11 +158,20 @@ Key implementation details:
 ./setup-helpers/04-install-docker.sh
 # etc.
 
-# Test in Docker (clean environment)
-docker compose -f test/docker/docker-compose.yaml up -d --build --remove-orphans
-docker compose -f test/docker/docker-compose.yaml exec debian-test-container bash
-# Inside container:
+# Test in Docker (clean environment, mimics real user experience)
+cd docker-test-env/docker
+docker compose up -d --build
+docker exec -it debian-test-container bash
+
+# Inside container - test one-liner (recommended):
+bash <(wget -qO- https://raw.githubusercontent.com/kossoy/debian-fresh-setup/main/install.sh)
+
+# Or test manual clone:
+git clone https://github.com/kossoy/debian-fresh-setup.git
 cd debian-fresh-setup && ./simple-bootstrap.sh
+
+# Clean up completely (removes images too):
+docker compose down --rmi all
 ```
 
 ### Working with Configurations
@@ -243,12 +269,19 @@ WORKEOF
 
 ## Testing
 
-See `test/TESTING_RESULTS.md` for comprehensive testing documentation including all issues found and fixed during Docker container testing.
+See `docker-test-env/TESTING_RESULTS.md` for comprehensive testing documentation including all issues found and fixed during Docker container testing.
+
+**Docker Test Environment** (`docker-test-env/`):
+- Isolated Debian stable container with sudo, wget, git pre-installed
+- NO repository mounting (tests fresh clone from GitHub)
+- Only APT cache volumes (faster rebuilds)
+- Use `docker compose down --rmi all` for complete cleanup
 
 **Key Testing Fixes**:
-1. Optional packages handle missing packages gracefully
+1. Optional packages handle missing packages gracefully (neovim, btop, tldr, fastfetch)
 2. `$(whoami)` instead of `$USER` for Docker compatibility
 3. Systemd detection before service management commands
+4. install.sh automatically runs simple-bootstrap.sh (tested successfully)
 
 ## Related
 

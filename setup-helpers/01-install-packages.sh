@@ -32,7 +32,6 @@ sudo apt install -y \
     fd-find \
     ripgrep \
     htop \
-    fastfetch \
     zsh \
     vim \
     nano \
@@ -41,6 +40,16 @@ sudo apt install -y \
     ca-certificates \
     gnupg \
     lsb-release
+
+# Install optional packages (may not be available in all Debian versions)
+echo "📥 Installing optional packages..."
+for pkg in neovim btop tldr fastfetch; do
+    if apt-cache show "$pkg" >/dev/null 2>&1; then
+        sudo apt install -y "$pkg" || echo "⚠️  Failed to install $pkg, skipping..."
+    else
+        echo "⚠️  Package $pkg not available in repositories, skipping..."
+    fi
+done
 
 # Install GitHub CLI
 echo "📥 Installing GitHub CLI..."

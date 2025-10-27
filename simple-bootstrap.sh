@@ -77,16 +77,22 @@ sudo apt install -y \
     build-essential \
     zsh \
     vim \
-    neovim \
     tmux \
     htop \
-    btop \
     ncdu \
-    tldr \
-    fastfetch \
     unzip \
     zip \
     p7zip-full
+
+# Install optional packages (may not be available in all Debian versions)
+echo "📦 Installing optional packages..."
+for pkg in neovim btop tldr fastfetch; do
+    if apt-cache show "$pkg" >/dev/null 2>&1; then
+        sudo apt install -y "$pkg" || echo "⚠️  Failed to install $pkg, skipping..."
+    else
+        echo "⚠️  Package $pkg not available in repositories, skipping..."
+    fi
+done
 
 echo "📦 Installing GitHub CLI..."
 if ! command -v gh >/dev/null 2>&1; then
@@ -118,18 +124,23 @@ if ! command -v docker >/dev/null 2>&1; then
     sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
     # Add user to docker group
-    sudo usermod -aG docker $USER
+    sudo usermod -aG docker "$(whoami)"
 
-    # Enable and start Docker
-    sudo systemctl enable docker.service
-    sudo systemctl enable containerd.service
-    sudo systemctl start docker.service
+    # Enable and start Docker (skip if systemd not available, e.g., in Docker containers)
+    if systemctl --version >/dev/null 2>&1 && [ -d /run/systemd/system ]; then
+        sudo systemctl enable docker.service
+        sudo systemctl enable containerd.service
+        sudo systemctl start docker.service
 
-    # Test with sudo (current session doesn't have group yet)
-    if sudo docker ps >/dev/null 2>&1; then
-        echo "✅ Docker installed and working: $(docker --version)"
+        # Test Docker
+        if sudo docker ps >/dev/null 2>&1; then
+            echo "✅ Docker installed and working: $(docker --version)"
+        else
+            echo "❌ Docker installed but test failed"
+        fi
     else
-        echo "❌ Docker installed but test failed"
+        echo "⚠️  Systemd not available (e.g., running in container), skipping service management"
+        echo "✅ Docker installed: $(docker --version)"
     fi
 else
     echo "✅ Docker already installed"

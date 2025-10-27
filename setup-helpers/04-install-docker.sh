@@ -54,13 +54,17 @@ sudo apt install -y \
 
 # Add current user to docker group
 echo "👥 Adding user to docker group..."
-sudo usermod -aG docker $USER
+sudo usermod -aG docker "$(whoami)"
 
-# Enable Docker service
-echo "🔄 Enabling Docker service..."
-sudo systemctl enable docker.service
-sudo systemctl enable containerd.service
-sudo systemctl start docker.service
+# Enable Docker service (skip if systemd not available, e.g., in Docker containers)
+if systemctl --version >/dev/null 2>&1 && [ -d /run/systemd/system ]; then
+    echo "🔄 Enabling Docker service..."
+    sudo systemctl enable docker.service
+    sudo systemctl enable containerd.service
+    sudo systemctl start docker.service
+else
+    echo "⚠️  Systemd not available (e.g., running in container), skipping service management"
+fi
 
 # Verify installation
 echo ""

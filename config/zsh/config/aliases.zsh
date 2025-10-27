@@ -195,6 +195,6 @@ fi
 # =============================================================================
 
 # Disk usage analyzer (wdu)
-if [[ -f "$HOME/work/scripts/wdu.sh" ]]; then
-    alias wdu="bash $HOME/work/scripts/wdu.sh"
+if [[ -f "$HOME/work/scripts/ai_wdu.sh" ]]; then
+    alias wdu="$HOME/work/scripts/ai_wdu.sh"
 fi

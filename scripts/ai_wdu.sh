@@ -1,7 +1,8 @@
-#!/usr/bin/env bash
+#!/bin/zsh
 
 # Enhanced graphical disk usage display
 # Original thanks to bolk http://bolknote.ru/2011/09/14/~3407#07
+# Compatible with both bash and zsh
 
 set -eo pipefail
 
@@ -151,9 +152,11 @@ print_items() {
 print_items_simple() {
     local list_length=${1:-$DEFAULT_LIST_LENGTH}
 
-    # Get disk usage data
+    # Get disk usage data (disable pipefail temporarily for glob expansion)
     local du_output
+    set +o pipefail
     du_output=$(du -sh .[!.]* * 2>/dev/null | sort -rh | head -n "$list_length")
+    set -o pipefail
 
     if [[ -z "$du_output" ]]; then
         echo "│ No files found in current directory          │"
@@ -161,24 +164,53 @@ print_items_simple() {
     fi
 
     # Get max size for scaling
+    set +o pipefail
     local max_size
     max_size=$(du -s .[!.]* * 2>/dev/null | sort -rn | head -1 | awk '{print $1}')
+    set -o pipefail
     [[ -z "$max_size" || "$max_size" -eq 0 ]] && max_size=1
+
+    # Initialize colors
+    local color_green color_yellow color_red color_reset
+    
+    # Only use colors if outputting to a terminal
+    if [[ -t 1 ]] || [[ "${FORCE_COLOR:-}" == "1" ]]; then
+        # Try 256-color mode if supported, otherwise fall back to 8-color
+        if [[ ${TERM:-} =~ 256color ]] || [[ ${COLORTERM:-} =~ (truecolor|24bit) ]]; then
+            # 256-color mode
+            color_green=$'\033[38;5;34m'
+            color_yellow=$'\033[38;5;220m'
+            color_red=$'\033[38;5;160m'
+            color_reset=$'\033[0m'
+        else
+            # Basic 8-color mode (more compatible)
+            color_green=$'\033[32m'
+            color_yellow=$'\033[33m'
+            color_red=$'\033[31m'
+            color_reset=$'\033[0m'
+        fi
+    else
+        # No colors for non-terminal output
+        color_green=""
+        color_yellow=""
+        color_red=""
+        color_reset=""
+    fi
 
     # Display each item
     while IFS=$'\t' read -r human_size item; do
         [[ -z "${item:-}" ]] && continue
 
         # Get numeric size for percentage calculation
-        local size
-        size=$(du -s "$item" 2>/dev/null | awk '{print $1}')
+        local size=$(du -s "$item" 2>/dev/null | awk '{print $1}')
+        [[ -z "$size" ]] && size=0
         local percent=$(( (size * BAR_WIDTH) / max_size ))
         (( percent > BAR_WIDTH )) && percent=$BAR_WIDTH
 
         # Select color
-        local color=${COLORS[0]}
-        (( percent >= 13 )) && color=${COLORS[1]}
-        (( percent >= 20 )) && color=${COLORS[2]}
+        local bar_color="$color_green"
+        (( percent >= 13 )) && bar_color="$color_yellow"
+        (( percent >= 20 )) && bar_color="$color_red"
 
         # Create bar
         local filled_bar=""
@@ -197,7 +229,7 @@ print_items_simple() {
         fi
 
         # Output with color
-        printf "│ \033[${color}m%-${BAR_WIDTH}s\033[0m │ %6s %s\n" \
+        printf "│ ${bar_color}%-${BAR_WIDTH}s${color_reset} │ %6s %s\n" \
             "${filled_bar}${empty_bar}" "$human_size" "$display_name"
 
     done <<< "$du_output"
@@ -238,8 +270,15 @@ main() {
     echo "└──────────────────────────────────────────┘"
 }
 
-# Run main function
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+# Run main function (compatible with both bash and zsh)
+if [[ -n "${BASH_SOURCE[0]}" ]]; then
+    # Running in bash
+    [[ "${BASH_SOURCE[0]}" == "${0}" ]] && main "$@"
+elif [[ -n "${ZSH_VERSION}" ]]; then
+    # Running in zsh - check if being sourced
+    [[ "${(%):-%x}" == "${0}" ]] && main "$@"
+else
+    # Other shells - just run it
     main "$@"
 fi
 # vim: set ts=4 sw=4 et:

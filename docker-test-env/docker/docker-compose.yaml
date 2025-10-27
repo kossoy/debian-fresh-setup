@@ -1,0 +1,19 @@
+services:
+  debian-test-service:
+    build: .
+    container_name: debian-test-container
+    hostname: debian-test
+
+    # NO volumes - completely isolated, safe environment
+    # Use persistent volumes only for apt cache (faster rebuilds)
+    volumes:
+      - apt-cache:/var/cache/apt
+      - apt-lib:/var/lib/apt
+
+    environment:
+      - DEBIAN_FRONTEND=noninteractive
+      - LANG=C.UTF-8
+
+volumes:
+  apt-cache:
+  apt-lib:

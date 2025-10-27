@@ -107,42 +107,50 @@ chmod +x simple-bootstrap.sh
 chmod +x setup-helpers/*.sh
 
 echo -e "${BLUE}========================================${NC}"
-echo -e "${GREEN}✅ Ready to run setup!${NC}"
+echo -e "${GREEN}✅ Starting automatic setup...${NC}"
 echo -e "${BLUE}========================================${NC}"
 echo ""
-echo "Choose installation method:"
+
+# Run simple bootstrap automatically
+./simple-bootstrap.sh
+
+# After simple bootstrap completes, offer full bootstrap
 echo ""
-echo "1. Automatic (Recommended)"
-echo "   Installs everything with sensible defaults"
-echo "   Command: ./simple-bootstrap.sh"
+echo -e "${BLUE}========================================${NC}"
+echo -e "${GREEN}✅ Basic setup complete!${NC}"
+echo -e "${BLUE}========================================${NC}"
 echo ""
-echo "2. Manual"
-echo "   Run individual setup helpers for more control"
-echo "   Start with: ./setup-helpers/01-install-packages.sh"
-echo ""
-echo "3. Just explore"
-echo "   The repository is now at: $INSTALL_DIR"
-echo "   Read the README.md for more information"
+echo "Would you like to run the full interactive setup?"
+echo "This includes:"
+echo "  • Git configuration (name, email, SSH keys)"
+echo "  • GitHub CLI authentication"
+echo "  • Python environment (pyenv + Python 3.12/3.13)"
+echo "  • Node.js environment (Volta)"
+echo "  • Database containers (PostgreSQL, MySQL, Redis)"
+echo "  • AI/ML tools (Ollama, etc.)"
 echo ""
 
-read -p "Run automatic setup now? (y/n): " -n 1 -r
+read -p "Run full interactive setup? (y/n): " -n 1 -r
 echo ""
 
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo ""
-    echo -e "${BLUE}🚀 Starting automatic setup...${NC}"
+    echo -e "${BLUE}🚀 Starting full interactive setup...${NC}"
     echo ""
-    ./simple-bootstrap.sh
+    ./bootstrap.sh
 else
     echo ""
-    echo "Setup scripts are ready at: $INSTALL_DIR"
+    echo -e "${GREEN}All done!${NC}"
     echo ""
-    echo "To start manual installation:"
+    echo "You can run the full setup later with:"
     echo "  cd $INSTALL_DIR"
-    echo "  ./simple-bootstrap.sh"
+    echo "  ./bootstrap.sh"
     echo ""
-    echo "Or run setup helpers individually:"
-    echo "  cd $INSTALL_DIR"
-    echo "  ./setup-helpers/01-install-packages.sh"
+    echo "Or run individual setup helpers:"
+    echo "  ./setup-helpers/03-git-and-ssh-setup.sh"
+    echo "  ./setup-helpers/05-install-python.sh"
+    echo "  ./setup-helpers/06-install-nodejs.sh"
+    echo "  ./setup-helpers/07-setup-databases.sh"
+    echo "  ./setup-helpers/09-install-ai-ml-tools.sh"
     echo ""
 fi

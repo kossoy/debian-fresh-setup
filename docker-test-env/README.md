@@ -83,10 +83,14 @@ show-context
 ### Stop and Clean Up
 
 ```bash
-# Stop container (removes everything)
-docker compose -f docker-test-env/docker/docker-compose.yaml down
+# Stop container and remove images (completely fresh start)
+docker compose -f docker-test-env/docker/docker-compose.yaml down --rmi all
 
-# Fresh start next time
+# Or from docker-test-env/docker/
+cd docker-test-env/docker
+docker compose down --rmi all
+
+# Fresh start next time (rebuilds from Dockerfile changes)
 docker compose -f docker-test-env/docker/docker-compose.yaml up -d --build
 ```
 

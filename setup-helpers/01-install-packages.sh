@@ -43,13 +43,23 @@ sudo apt install -y \
 
 # Install optional packages (may not be available in all Debian versions)
 echo "📥 Installing optional packages..."
-for pkg in neovim btop tldr fastfetch; do
+for pkg in neovim btop fastfetch; do
     if apt-cache show "$pkg" >/dev/null 2>&1; then
-        sudo apt install -y "$pkg" || echo "⚠️  Failed to install $pkg, skipping..."
+        if sudo apt install -y "$pkg" 2>&1 | grep -q "has no installation candidate\|is not available"; then
+            echo "⚠️  Package $pkg not available, skipping..."
+        fi
     else
         echo "⚠️  Package $pkg not available in repositories, skipping..."
     fi
 done
+
+# Install tealdeer (tldr replacement) - available in Bookworm and Trixie
+echo "📥 Installing tealdeer (tldr pages client)..."
+if apt-cache show tealdeer >/dev/null 2>&1; then
+    sudo apt install -y tealdeer || echo "⚠️  Failed to install tealdeer, skipping..."
+else
+    echo "⚠️  Package tealdeer not available, skipping..."
+fi
 
 # Install GitHub CLI
 echo "📥 Installing GitHub CLI..."

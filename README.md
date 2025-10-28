@@ -50,7 +50,7 @@ cd debian-fresh-setup
 
 ✅ **Enhanced Shell**: Oh My Zsh + Powerlevel10k + custom functions
 ✅ **Context Switching**: Automatic work/personal environment switching
-✅ **Essential Dev Tools**: git, gh, vim, neovim, tmux, htop, btop, ncdu, tldr, ripgrep, bat, fd, eza
+✅ **Essential Dev Tools**: git, gh, vim, neovim, tmux, htop, btop, ncdu, tealdeer (tldr), ripgrep, bat, fd, eza
 ✅ **Utility Scripts**: Disk usage, systemd manager, update checker, backup tools
 ✅ **Work Organization**: Structured project directories
 ✅ **Linux Integration**: Systemd services, apt package management

@@ -9,6 +9,10 @@ docker-test-env/
 ├── docker/
 │   ├── Dockerfile              # Debian stable + sudo + wget + git
 │   └── docker-compose.yaml     # Container orchestration
+├── build.sh                    # Build container image
+├── up.sh                       # Start container in detached mode
+├── exec.sh                     # Enter container (bash or zsh)
+├── clean.sh                    # Complete cleanup (images + volumes)
 ├── TESTING_RESULTS.md          # Test documentation
 └── README.md                   # This file
 ```
@@ -19,9 +23,38 @@ docker-test-env/
 **✅ No data volumes** - Everything stays inside container
 **✅ Fresh start every time** - `docker compose down` removes everything
 
+## Quick Start (Recommended)
+
+```bash
+cd docker-test-env
+
+./build.sh      # Build the container image
+./up.sh         # Start container in detached mode
+./exec.sh       # Enter container with bash
+./exec.sh zsh   # Enter container with zsh (after bootstrap)
+./clean.sh      # Complete cleanup (removes everything)
+```
+
 ## Usage
 
-### Start Container
+### Method 1: Convenience Scripts (Recommended)
+
+```bash
+cd docker-test-env
+
+# Build and start
+./build.sh
+./up.sh
+
+# Enter container
+./exec.sh       # Default: bash
+./exec.sh zsh   # Use zsh (after running bootstrap)
+
+# Complete cleanup
+./clean.sh      # Removes containers, images, and volumes
+```
+
+### Method 2: Docker Compose Directly
 
 ```bash
 # From repo root
@@ -30,11 +63,8 @@ docker compose -f docker-test-env/docker/docker-compose.yaml up -d --build
 # Or from docker-test-env/docker/
 cd docker-test-env/docker
 docker compose up -d --build
-```
 
-### Access Container
-
-```bash
+# Access container
 docker exec -it debian-test-container bash
 ```
 
@@ -82,16 +112,24 @@ show-context
 
 ### Stop and Clean Up
 
+**Using convenience script (recommended):**
+```bash
+cd docker-test-env
+./clean.sh      # Prompts for confirmation, removes everything
+```
+
+**Using docker compose directly:**
 ```bash
 # Stop container and remove images (completely fresh start)
 docker compose -f docker-test-env/docker/docker-compose.yaml down --rmi all
 
+# Remove volumes too
+docker volume rm docker_apt-cache docker_apt-lib
+
 # Or from docker-test-env/docker/
 cd docker-test-env/docker
 docker compose down --rmi all
-
-# Fresh start next time (rebuilds from Dockerfile changes)
-docker compose -f docker-test-env/docker/docker-compose.yaml up -d --build
+docker volume rm docker_apt-cache docker_apt-lib
 ```
 
 ## What Gets Tested

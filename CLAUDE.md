@@ -27,14 +27,15 @@ debian-fresh-setup/
 ├── setup-helpers/            # Modular, idempotent setup scripts
 │   ├── 01-install-packages.sh    # APT packages, GitHub CLI, eza, symlinks
 │   ├── 02-install-oh-my-zsh.sh   # Oh My Zsh + plugins + Powerlevel10k
-│   ├── 03-setup-shell.sh         # Deploy modular zsh config
-│   ├── 03-git-and-ssh-setup.sh   # Interactive Git/SSH/GitHub setup
+│   ├── 03-setup-shell.sh         # Deploy modular zsh config (called by simple-bootstrap.sh)
+│   ├── 03-git-and-ssh-setup.sh   # Interactive Git/SSH/GitHub setup (called by bootstrap.sh)
 │   ├── 04-install-docker.sh      # Docker Engine + Docker Compose
 │   ├── 05-install-python.sh      # pyenv + Python versions
 │   ├── 06-install-nodejs.sh      # Volta (Node.js version manager)
 │   ├── 07-setup-databases.sh     # Docker database containers
 │   ├── 08-restore-sensitive.sh   # Restore sensitive data from backups
 │   └── 09-install-ai-ml-tools.sh # AI/ML development tools
+│   Note: Two scripts share "03-" prefix - they serve different bootstrap flows
 ├── config/zsh/               # Shell configuration (SOURCE OF TRUTH)
 │   ├── config/              # Modular configs: aliases, functions, paths, tools, context
 │   │   ├── aliases.zsh
@@ -45,6 +46,14 @@ debian-fresh-setup/
 │   │   └── python.zsh
 │   └── zshrc.template       # Template (not used by simple-bootstrap)
 ├── scripts/                 # Utility scripts → installed to ~/work/scripts/
+│   ├── ai_wdu.sh              # Disk usage analyzer (zsh version)
+│   ├── backup-configs.sh      # Backup shell configurations
+│   ├── llm-usage.sh           # Track LLM API usage and costs
+│   ├── organize-screenshots.sh # Organize screenshot files
+│   ├── sync-to-branches.sh    # Sync files across git branches
+│   ├── systemd-manager.sh     # Manage systemd user services
+│   ├── update-check.sh        # Check for system updates
+│   └── video-to-audio.sh      # Convert video files to audio
 ├── setup/                   # User documentation guides
 └── systemd-templates/       # Systemd service templates
 ```
@@ -108,7 +117,8 @@ Key implementation details:
   - `batcat` → symlinked to `/usr/local/bin/bat`
   - `fdfind` → symlinked to `/usr/local/bin/fd`
 - Third-party repos added for: GitHub CLI (`gh`), `eza` (modern ls replacement)
-- **Optional packages** (`neovim`, `btop`, `tldr`, `fastfetch`) - not available in all Debian versions, gracefully skipped if unavailable
+- **Optional packages** (`neovim`, `btop`, `fastfetch`) - not available in all Debian versions, gracefully skipped if unavailable
+- **Package replacements**: `tldr` was removed from Debian, replaced with `tealdeer` (Rust-based tldr client that provides the same `tldr` command)
 
 ### 4. Deployment Flow
 
@@ -159,19 +169,26 @@ Key implementation details:
 # etc.
 
 # Test in Docker (clean environment, mimics real user experience)
-cd docker-test-env/docker
+cd docker-test-env
+
+# Use convenience scripts (recommended):
+./build.sh           # Build the container image
+./up.sh              # Start container in detached mode
+./exec.sh            # Enter container with bash (default)
+./exec.sh zsh        # Enter container with zsh (after bootstrap)
+./clean.sh           # Complete cleanup (removes images and volumes)
+
+# Or use docker compose directly:
+cd docker
 docker compose up -d --build
 docker exec -it debian-test-container bash
 
-# Inside container - test one-liner (recommended):
+# Inside container - test one-liner from GitHub (recommended):
 bash <(wget -qO- https://raw.githubusercontent.com/kossoy/debian-fresh-setup/main/install.sh)
 
 # Or test manual clone:
 git clone https://github.com/kossoy/debian-fresh-setup.git
 cd debian-fresh-setup && ./simple-bootstrap.sh
-
-# Clean up completely (removes images too):
-docker compose down --rmi all
 ```
 
 ### Working with Configurations
@@ -195,10 +212,14 @@ ssh-add -l
 ### Utility Scripts
 
 ```bash
-wdu                                  # Disk usage analyzer (also in scripts/ai_wdu.sh)
-~/work/scripts/systemd-manager.sh    # Manage systemd services
-~/work/scripts/update-check.sh       # Check for updates
-~/work/scripts/backup-configs.sh     # Backup configurations
+wdu                                      # Disk usage analyzer (alias to scripts/ai_wdu.sh)
+~/work/scripts/systemd-manager.sh        # Manage systemd user services
+~/work/scripts/update-check.sh           # Check for system updates
+~/work/scripts/backup-configs.sh         # Backup shell configurations
+~/work/scripts/llm-usage.sh              # Track LLM API usage and costs
+~/work/scripts/organize-screenshots.sh   # Organize screenshot files by date
+~/work/scripts/sync-to-branches.sh       # Sync files across git branches
+~/work/scripts/video-to-audio.sh         # Convert video to audio (ffmpeg)
 ```
 
 ## Key Patterns & Conventions
@@ -236,30 +257,63 @@ fi
 
 Some packages may not be available in all Debian versions:
 ```bash
-for pkg in neovim btop tldr fastfetch; do
+for pkg in neovim btop fastfetch; do
     if apt-cache show "$pkg" >/dev/null 2>&1; then
-        sudo apt install -y "$pkg" || echo "⚠️  Failed to install $pkg, skipping..."
+        # Check install output for "no installation candidate" errors
+        if sudo apt install -y "$pkg" 2>&1 | grep -q "has no installation candidate\|is not available"; then
+            echo "⚠️  Package $pkg not available, skipping..."
+        fi
     else
-        echo "⚠️  Package $pkg not available, skipping..."
+        echo "⚠️  Package $pkg not available in repositories, skipping..."
     fi
 done
 ```
+
+**Why this pattern**: Some packages may have complex dependencies that cause `apt-cache show` to succeed but `apt install` to fail. The grep check catches these cases without breaking `set -e`.
+
+### Handling Package Replacements
+
+The `tldr` package was removed from Debian Bookworm/Trixie. Use `tealdeer` as replacement:
+```bash
+# Install tealdeer (tldr replacement) - available in Bookworm and Trixie
+echo "📦 Installing tealdeer (tldr pages client)..."
+if apt-cache show tealdeer >/dev/null 2>&1; then
+    sudo apt install -y tealdeer || echo "⚠️  Failed to install tealdeer, skipping..."
+else
+    echo "⚠️  Package tealdeer not available, skipping..."
+fi
+```
+
+**Background**: The original `tldr` (Haskell client) was removed from Debian. `tealdeer` is a Rust-based implementation that provides the same `tldr` command and is the recommended replacement. Alternative: `tldr-py` (Python client).
 
 ### Context Switching Critical Code
 
 When modifying `context.zsh`, preserve this pattern:
 ```bash
 work() {
+    echo "🏢 Switching to WORK context..."
+
+    # Create context file with heredoc
     cat > "$CONTEXT_FILE" << 'WORKEOF'
 export WORK_CONTEXT="work"
-export GIT_AUTHOR_NAME="..."
-export GIT_AUTHOR_EMAIL="..."
-# ... more vars
+export GIT_AUTHOR_NAME="Your Work Name"
+export GIT_AUTHOR_EMAIL="work@company.com"
+export GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME"
+export GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
+export WORK_PROJECTS="$HOME/work/projects/work"
+cd "$WORK_PROJECTS" 2>/dev/null || cd "$HOME/work"
 WORKEOF
+
+    # Source the file to apply immediately
     source "$CONTEXT_FILE"
-    # SSH key loading logic
+
+    echo "✅ Work context activated"
+    echo "   📧 Email: $GIT_AUTHOR_EMAIL"
+    echo "   📁 Projects: $WORK_PROJECTS"
 }
 ```
+
+**Critical**: The heredoc delimiter must be quoted ('WORKEOF') to prevent variable expansion. The context file is sourced immediately after creation, and users must manually edit the template values (names/emails) after first setup.
 
 ### Git Workflow
 
@@ -275,13 +329,15 @@ See `docker-test-env/TESTING_RESULTS.md` for comprehensive testing documentation
 - Isolated Debian stable container with sudo, wget, git pre-installed
 - NO repository mounting (tests fresh clone from GitHub)
 - Only APT cache volumes (faster rebuilds)
-- Use `docker compose down --rmi all` for complete cleanup
+- Convenience scripts: `build.sh`, `up.sh`, `exec.sh [bash|zsh]`, `clean.sh`
+- Or use `docker compose` directly from `docker-test-env/docker/`
 
 **Key Testing Fixes**:
-1. Optional packages handle missing packages gracefully (neovim, btop, tldr, fastfetch)
-2. `$(whoami)` instead of `$USER` for Docker compatibility
-3. Systemd detection before service management commands
-4. install.sh automatically runs simple-bootstrap.sh (tested successfully)
+1. Optional packages handle missing packages gracefully (neovim, btop, fastfetch)
+2. Replaced `tldr` with `tealdeer` - tldr was removed from Debian, tealdeer is the recommended replacement
+3. `$(whoami)` instead of `$USER` for Docker compatibility
+4. Systemd detection before service management commands
+5. install.sh automatically runs simple-bootstrap.sh (tested successfully)
 
 ## Related
 
